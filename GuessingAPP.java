@@ -1,51 +1,63 @@
 import java.util.Scanner;
-
 public class GuessingAPP {
 
     public static void main(String[] args) throws InvalidInputException {
 
         Scanner scanner = new Scanner(System.in);
+        boolean restart;
 
         System.out.println("===============================");
         System.out.println("Welcome to the Guessing App");
         System.out.println("===============================\n");
 
-        System.out.print("Enter Player Name: ");
-        String player = scanner.nextLine();
+        
+        do {
 
-        GameConfig config = new GameConfig();
-        config.showRules();
+            
+            System.out.print("Enter Player Name: ");
+            String player = scanner.nextLine();
 
-        int attempts = 0;
-        int hintsUsed = 0;
+            GameConfig config = new GameConfig();
+            config.showRules();
 
-        boolean win = false;
+            int attempts = 0;
+            int hintsUsed = 0;
 
-        while (attempts < config.getMaxAttempts()) {
+            
+            boolean win = false;
 
-            System.out.print("Enter your guess: ");
+            
+            while (attempts < config.getMaxAttempts()) {
 
-            int guess = ValidationService.validateInput(scanner.nextLine());
-            attempts++;
+                System.out.print("Enter your guess: ");
 
-            String result = GuessValidator.validateGuess(
-                    guess, config.getTargetNumber());
+                int guess = ValidationService.validateInput(scanner.nextLine());
+                attempts++;
 
-            if (!"CORRECT".equals(result) && hintsUsed < config.getMaxHints()) {
-                hintsUsed++;
-                System.out.println(
-                    HintService.generateHint(config.getTargetNumber(), hintsUsed)
-                );
+                String result = GuessValidator.validateGuess(
+                        guess, config.getTargetNumber());
+
+                if (!"CORRECT".equals(result) && hintsUsed < config.getMaxHints()) {
+                    hintsUsed++;
+                    System.out.println(
+                        HintService.generateHint(config.getTargetNumber(), hintsUsed)
+                    );
+                }
+
+                System.out.println(result);
+
+                if ("CORRECT".equals(result)) {
+                    win = true;
+                    break;
+                }
             }
 
-            System.out.println(result);
+            
+            StorageService.saveResult(player, attempts, win);
 
-            if ("CORRECT".equals(result)) {
-                win = true;
-                break;
-            }
-        }
+            
+            restart = GameController.restartGame(scanner);
 
-        StorageService.saveResult(player, attempts, win);
+        } while (restart);
     }
 }
